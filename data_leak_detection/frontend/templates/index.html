@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Data Leak Detection & SQLi Prevention System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <!-- Hero Section -->
+        <div class="p-5 mb-4 rounded-3 border border-secondary" style="background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);">
+            <div class="container-fluid py-2">
+                <div class="d-flex align-items-center gap-2 mb-2 text-primary">
+                    <i class="fa-solid fa-shield-virus fs-2"></i>
+                    <span class="text-uppercase fw-semibold tracking-wider small">Cybersecurity Demonstration</span>
+                </div>
+                <h1 class="display-6 fw-bold text-white">Data Leak Detection & SQL Injection Prevention System</h1>
+                <p class="col-md-10 fs-5 text-secondary mt-3">
+                    An enterprise security architecture demonstrating multi-layered defense-in-depth:
+                    parameterized SQL safety, heuristic intrusion detection, AES-256-GCM authenticated encryption at rest,
+                    Argon2id password hashing, and cryptographic capability tokens.
+                </p>
+                <div class="d-flex gap-3 mt-4 flex-wrap">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary px-4 py-2">
+                            <i class="fa-solid fa-gauge me-2"></i> Go to Dashboard
+                        </a>
+                        <a href="{{ url_for('security.sql_injection_demo') }}" class="btn btn-outline-warning px-4 py-2">
+                            <i class="fa-solid fa-flask-vial me-2"></i> Run SQLi Attack Demo
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary px-4 py-2">
+                            <i class="fa-solid fa-right-to-bracket me-2"></i> Login to System
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light px-4 py-2">
+                            <i class="fa-solid fa-user-plus me-2"></i> Register New User
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Features Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-primary">
+                    <div class="card-body">
+                        <div class="text-primary fs-3 mb-2"><i class="fa-solid fa-database"></i></div>
+                        <h5 class="card-title text-white">Parameterized Queries</h5>
+                        <p class="card-text text-secondary small">
+                            Zero string concatenation in database statements. All input uses strictly bound parameter placeholders (<code class="text-info">%s</code>), rendering SQL injection structurally impossible.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-info">
+                    <div class="card-body">
+                        <div class="text-info fs-3 mb-2"><i class="fa-solid fa-radar"></i></div>
+                        <h5 class="card-title text-white">Heuristic SQLi Detection</h5>
+                        <p class="card-text text-secondary small">
+                            Passive signature analysis inspects incoming payloads for malicious vectors (<code class="text-info">OR 1=1</code>, <code class="text-info">UNION SELECT</code>, <code class="text-info">DROP TABLE</code>) and logs security events in real-time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-success">
+                    <div class="card-body">
+                        <div class="text-success fs-3 mb-2"><i class="fa-solid fa-key"></i></div>
+                        <h5 class="card-title text-white">AES-256-GCM Encryption</h5>
+                        <p class="card-text text-secondary small">
+                            Data records stored in the database are protected with military-grade authenticated encryption. Even if the raw database is leaked or dumped, data payloads cannot be read.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-warning">
+                    <div class="card-body">
+                        <div class="text-warning fs-3 mb-2"><i class="fa-solid fa-fingerprint"></i></div>
+                        <h5 class="card-title text-white">Argon2id Password Hashing</h5>
+                        <p class="card-text text-secondary small">
+                            Winner of the Password Hashing Competition. Resistant to side-channel and GPU cracking attacks using 64 MB memory cost and 3 iterations per hash.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-danger">
+                    <div class="card-body">
+                        <div class="text-danger fs-3 mb-2"><i class="fa-solid fa-ticket"></i></div>
+                        <h5 class="card-title text-white">Capability-Based Security</h5>
+                        <p class="card-text text-secondary small">
+                            Cryptographic capability tokens grant fine-grained, time-limited permissions. Tokens are hashed with SHA-256 and can be instantly revoked on demand.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-secondary">
+                    <div class="card-body">
+                        <div class="text-secondary fs-3 mb-2"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <h5 class="card-title text-white">Audit Trails & Monitoring</h5>
+                        <p class="card-text text-secondary small">
+                            Every authentication attempt, record retrieval, capability token grant, and flagged anomaly is committed to immutable audit logs with correlation IDs.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

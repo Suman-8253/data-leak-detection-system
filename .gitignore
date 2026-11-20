@@ -1,0 +1,38 @@
+# Environment variables & secrets
+.env
+data_leak_detection/.env
+*.env
+*.env.local
+
+# Local PostgreSQL portable distribution & data
+pgsql/
+*.zip
+*.bat~
+pw.txt
+
+# Python cache & artifacts
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+pgsql/logfile

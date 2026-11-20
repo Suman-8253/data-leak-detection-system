@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}SQL Injection Defense Demo - Data Leak Detection System{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-12 col-xl-11">
+        <!-- Header Banner -->
+        <div class="card border-warning mb-4 shadow">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 text-warning mb-1">
+                            <i class="fa-solid fa-flask-vial fs-3"></i>
+                            <h3 class="fw-bold mb-0 text-white">SQL Injection Prevention & Detection Lab</h3>
+                        </div>
+                        <p class="text-secondary small mb-0">
+                            Educational simulation demonstrating how parameterized queries neutralize SQL injection vectors
+                            while regex-based heuristics flag intrusive signatures for auditing.
+                        </p>
+                    </div>
+                    <form method="POST" action="{{ url_for('security.sql_injection_demo') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="test_type" value="predefined">
+                        <button type="submit" class="btn btn-warning px-4 py-2 fw-semibold">
+                            <i class="fa-solid fa-play me-2"></i> Run Automated Attack Suite
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% if test_results %}
+        <!-- Results Table -->
+        <div class="card shadow">
+            <div class="card-header bg-dark d-flex justify-content-between align-items-center py-3">
+                <h5 class="card-title text-white mb-0 fs-6">
+                    <i class="fa-solid fa-list-check text-primary me-2"></i>
+                    Execution Results ({{ test_results|length }} Payloads Tested)
+                </h5>
+                <span class="badge bg-success"><i class="fa-solid fa-shield-check me-1"></i> 100% Parameterized Query Protection</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Test Scenario</th>
+                                <th>Injected Payload</th>
+                                <th>Category</th>
+                                <th>Heuristic Detection</th>
+                                <th>Query Safety</th>
+                                <th>Outcome & Behavior</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in test_results %}
+                            <tr>
+                                <td>
+                                    <strong class="text-white d-block">{{ r.name }}</strong>
+                                    <span class="text-secondary small">{{ r.description }}</span>
+                                </td>
+                                <td>
+                                    <code class="p-1 rounded bg-black border border-secondary text-warning d-inline-block font-monospace" style="max-width: 260px; overflow-x: auto;">
+                                        {{ r.input }}
+                                    </code>
+                                </td>
+                                <td>
+                                    {% if r.category == 'injection' %}
+                                        <span class="badge bg-danger">Attack Vector</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Benign Input</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if r.is_suspicious %}
+                                        <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Flagged Malicious</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Unflagged</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i> Safe (Parameterized)</span>
+                                </td>
+                                <td class="small">
+                                    <span class="text-info d-block">{{ r.query_result }}</span>
+                                    <span class="text-secondary">{{ r.explanation }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-dark text-secondary small py-3">
+                <i class="fa-solid fa-circle-info text-info me-1"></i>
+                <strong>Key Takeaway:</strong> Even if an attacker injects statements like <code class="text-danger">' OR '1'='1</code> or <code class="text-danger">; DROP TABLE;</code>, PostgreSQL treats the entire string purely as a literal value parameter, never executing it as code.
+            </div>
+        </div>
+        {% else %}
+        <!-- Placeholder / Explainer -->
+        <div class="card text-center p-5 border-secondary">
+            <div class="py-4">
+                <i class="fa-solid fa-shield-halved text-primary fs-1 mb-3"></i>
+                <h4 class="text-white">Run the SQL Injection Defense Suite</h4>
+                <p class="text-secondary col-md-8 mx-auto">
+                    Click the <strong>Run Automated Attack Suite</strong> button above to execute a battery of predefined test cases (Classic <code class="text-warning">OR 1=1</code>, <code class="text-warning">UNION SELECT</code>, <code class="text-warning">DROP TABLE</code>, stacked queries, and normal lookups) against the system's parameterized query engine.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

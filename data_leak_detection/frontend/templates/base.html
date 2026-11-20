@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Data Leak Detection & SQLi Prevention System{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Custom Cyber Dark Theme -->
+    <style>
+        :root {
+            --cyber-bg: #0d1117;
+            --cyber-card: #161b22;
+            --cyber-border: #30363d;
+            --cyber-text: #c9d1d9;
+            --cyber-accent: #58a6ff;
+            --cyber-success: #238636;
+            --cyber-danger: #da3633;
+            --cyber-warning: #d29922;
+        }
+        body {
+            background-color: var(--cyber-bg);
+            color: var(--cyber-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar-dark {
+            background-color: #010409 !important;
+            border-bottom: 1px solid var(--cyber-border);
+        }
+        .card {
+            background-color: var(--cyber-card);
+            border: 1px solid var(--cyber-border);
+            color: var(--cyber-text);
+        }
+        .card-header {
+            background-color: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--cyber-border);
+        }
+        .form-control, .form-select {
+            background-color: #0d1117;
+            border: 1px solid var(--cyber-border);
+            color: #ffffff;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #161b22;
+            border-color: var(--cyber-accent);
+            color: #ffffff;
+            box-shadow: 0 0 0 0.25rem rgba(88, 166, 255, 0.25);
+        }
+        .table {
+            color: var(--cyber-text);
+            border-color: var(--cyber-border);
+        }
+        .table > :not(caption) > * > * {
+            background-color: transparent;
+            border-bottom-color: var(--cyber-border);
+        }
+        .table-hover > tbody > tr:hover > * {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+        }
+        .badge-admin {
+            background-color: #8957e5;
+        }
+        .badge-user {
+            background-color: #1f6feb;
+        }
+        .stat-card {
+            border-radius: 8px;
+            padding: 1.25rem;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .nav-link.active {
+            color: var(--cyber-accent) !important;
+            font-weight: 600;
+        }
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--cyber-border);
+            background-color: #010409;
+            padding: 1rem 0;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('index') }}">
+                <i class="fa-solid fa-shield-halved text-primary fs-4"></i>
+                <span class="fw-bold tracking-wide">DataLeakShield</span>
+                <span class="badge bg-danger ms-1 text-uppercase" style="font-size: 0.65rem;">Defense-In-Depth</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.dashboard') }}">
+                                <i class="fa-solid fa-gauge me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('records.list_view') }}">
+                                <i class="fa-solid fa-lock me-1"></i> Secure Records
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('security.sql_injection_demo') }}">
+                                <i class="fa-solid fa-vial-virus me-1"></i> SQLi Demo
+                            </a>
+                        </li>
+                        {% if current_user.is_admin %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-warning" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-user-shield me-1"></i> Admin Console
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}"><i class="fa-solid fa-chart-line me-2"></i>Admin Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('security.security_monitor') }}"><i class="fa-solid fa-triangle-exclamation me-2"></i>Security Events</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.user_management') }}"><i class="fa-solid fa-users-gear me-2"></i>User Management</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('capabilities.management') }}"><i class="fa-solid fa-key me-2"></i>Capability Codes</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.audit_logs') }}"><i class="fa-solid fa-file-shield me-2"></i>Audit Logs</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                        </li>
+                    {% endif %}
+                </ul>
+
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item me-3 text-secondary small">
+                            <i class="fa-regular fa-user me-1"></i>
+                            <span class="text-light fw-medium">{{ current_user.username }}</span>
+                            {% if current_user.is_admin %}
+                                <span class="badge badge-admin ms-1">Admin</span>
+                            {% else %}
+                                <span class="badge badge-user ms-1">User</span>
+                            {% endif %}
+                        </li>
+                        <li class="nav-item me-2">
+                            <a class="nav-link text-secondary" href="{{ url_for('user.settings') }}" title="System Settings">
+                                <i class="fa-solid fa-sliders"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-danger btn-sm" href="{{ url_for('auth.logout') }}">
+                                <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item me-2">
+                            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('auth.login') }}">
+                                <i class="fa-solid fa-right-to-bracket me-1"></i> Log In
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">
+                                <i class="fa-solid fa-user-plus me-1"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container-fluid px-4 py-4 flex-grow-1">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row justify-content-center mb-3">
+                    <div class="col-12 col-xl-10">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show d-flex align-items-center" role="alert">
+                                {% if category == 'success' %}
+                                    <i class="fa-solid fa-circle-check me-2 fs-5"></i>
+                                {% elif category == 'danger' or category == 'error' %}
+                                    <i class="fa-solid fa-circle-xmark me-2 fs-5"></i>
+                                {% elif category == 'warning' %}
+                                    <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-info me-2 fs-5"></i>
+                                {% endif %}
+                                <div class="flex-grow-1">{{ message }}</div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-secondary small py-3">
+        <div class="container">
+            <span>&copy; Data Leak Detection & SQL Injection Prevention System &bull; AES-256-GCM &bull; Argon2id &bull; Parameterized Queries</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

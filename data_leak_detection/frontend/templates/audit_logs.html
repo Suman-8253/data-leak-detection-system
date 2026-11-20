@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs - Data Leak Detection System{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2 class="h3 fw-bold text-white mb-0">
+                <i class="fa-solid fa-file-shield text-info me-2"></i> Immutable Audit Logs
+            </h2>
+            <p class="text-secondary small mb-0">Complete historical audit trail of security and system actions</p>
+        </div>
+        <div class="text-secondary small">
+            Total Logs: <strong>{{ total }}</strong>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="col-12">
+        <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="row g-2 align-items-center">
+            <div class="col-sm-5 col-md-3">
+                <input type="text" class="form-control form-control-sm" name="action" placeholder="Filter by action (e.g. user_login)" value="{{ action_filter }}">
+            </div>
+            <div class="col-sm-4 col-md-2">
+                <select name="outcome" class="form-select form-select-sm">
+                    <option value="">All Outcomes</option>
+                    <option value="success" {% if outcome_filter == 'success' %}selected{% endif %}>Success</option>
+                    <option value="failure" {% if outcome_filter == 'failure' %}selected{% endif %}>Failure</option>
+                    <option value="denied" {% if outcome_filter == 'denied' %}selected{% endif %}>Denied</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary btn-sm">Filter</button>
+                {% if action_filter or outcome_filter %}
+                    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-secondary btn-sm">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Audit Logs Table -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Actor</th>
+                                <th>Action</th>
+                                <th>Resource Type</th>
+                                <th>Outcome</th>
+                                <th>Correlation ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if logs %}
+                                {% for l in logs %}
+                                <tr>
+                                    <td class="small text-secondary">{{ l.timestamp.strftime('%Y-%m-%d %H:%M:%S') if l.timestamp else 'N/A' }}</td>
+                                    <td>
+                                        <span class="text-light fw-medium">
+                                            <i class="fa-solid fa-user me-1 text-secondary"></i>{{ l.actor_name or 'System/Anon' }}
+                                        </span>
+                                    </td>
+                                    <td><code class="text-info">{{ l.action }}</code></td>
+                                    <td class="small text-secondary font-monospace">{{ l.resource_type or '-' }}</td>
+                                    <td>
+                                        {% if l.outcome == 'success' %}
+                                            <span class="badge bg-success">Success</span>
+                                        {% elif l.outcome == 'denied' %}
+                                            <span class="badge bg-danger">Denied</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">{{ l.outcome }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-secondary font-monospace" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        {{ l.correlation_id or '-' }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-secondary py-4">No audit logs matching query.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if total_pages > 1 %}
+            <div class="card-footer bg-dark border-secondary d-flex justify-content-between align-items-center py-2">
+                <span class="text-secondary small">Page {{ page }} of {{ total_pages }}</span>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page > 1 %}
+                            <li class="page-item"><a class="page-link bg-dark border-secondary text-primary" href="{{ url_for('admin.audit_logs', page=page-1, action=action_filter, outcome=outcome_filter) }}">Previous</a></li>
+                        {% endif %}
+                        {% if page < total_pages %}
+                            <li class="page-item"><a class="page-link bg-dark border-secondary text-primary" href="{{ url_for('admin.audit_logs', page=page+1, action=action_filter, outcome=outcome_filter) }}">Next</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

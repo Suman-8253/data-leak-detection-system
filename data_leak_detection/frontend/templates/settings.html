@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}System Health & Settings - Data Leak Detection System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card shadow border-secondary mb-4">
+            <div class="card-header py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-sliders text-primary fs-4"></i>
+                    <div>
+                        <h4 class="card-title text-white mb-0">System Security & Health Status</h4>
+                        <span class="text-secondary small">Diagnostic information and cryptographic subsystem state</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="list-group list-group-flush bg-transparent">
+                    <!-- Database Health -->
+                    <div class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <strong class="text-white d-block"><i class="fa-solid fa-database text-primary me-2"></i>PostgreSQL Database Connection</strong>
+                            <span class="text-secondary small">{{ health.database_message }}</span>
+                        </div>
+                        <div>
+                            {% if health.database_connected %}
+                                <span class="badge bg-success px-3 py-2"><i class="fa-solid fa-circle-check me-1"></i> Connected</span>
+                            {% else %}
+                                <span class="badge bg-danger px-3 py-2"><i class="fa-solid fa-circle-xmark me-1"></i> Disconnected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Encryption Subsystem -->
+                    <div class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <strong class="text-white d-block"><i class="fa-solid fa-key text-success me-2"></i>AES-256-GCM Encryption Engine</strong>
+                            <span class="text-secondary small">Authenticated AEAD cipher with 12-byte initialization vectors per payload</span>
+                        </div>
+                        <div>
+                            {% if health.encryption_configured %}
+                                <span class="badge bg-success px-3 py-2"><i class="fa-solid fa-check-double me-1"></i> Key Configured</span>
+                            {% else %}
+                                <span class="badge bg-danger px-3 py-2"><i class="fa-solid fa-triangle-exclamation me-1"></i> Key Missing</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Password Security -->
+                    <div class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <strong class="text-white d-block"><i class="fa-solid fa-fingerprint text-warning me-2"></i>Argon2id Password Storage</strong>
+                            <span class="text-secondary small">64 MB RAM, 3 iterations, 4 parallelism threads</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-info text-dark px-3 py-2">Operational</span>
+                        </div>
+                    </div>
+
+                    <!-- Current Authenticated User -->
+                    <div class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <strong class="text-white d-block"><i class="fa-solid fa-user-shield text-info me-2"></i>Active Session Profile</strong>
+                            <span class="text-secondary small">Logged in as <strong class="text-light">{{ current_user.username }}</strong> ({{ current_user.email }})</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-dark border border-secondary text-secondary">{{ current_user.role|upper }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-dark text-secondary small py-3">
+                <i class="fa-solid fa-shield-halved text-success me-1"></i> Defense-In-Depth Security Architecture is fully operational.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

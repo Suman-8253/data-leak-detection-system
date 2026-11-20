@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Capability Management - Data Leak Detection System{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2 class="h3 fw-bold text-white mb-0">
+                <i class="fa-solid fa-key text-warning me-2"></i> Scoped Capability Tokens
+            </h2>
+            <p class="text-secondary small mb-0">Cryptographic tokens implementing principle of least privilege</p>
+        </div>
+    </div>
+
+    <!-- Create Token Card -->
+    <div class="col-12 col-lg-5">
+        <div class="card shadow border-secondary h-100">
+            <div class="card-header bg-dark py-3">
+                <h5 class="card-title text-white mb-0 fs-6">
+                    <i class="fa-solid fa-plus-circle text-primary me-2"></i> Issue New Capability Token
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('capabilities.create') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label for="action" class="form-label text-secondary small text-uppercase fw-semibold">Permitted Action</label>
+                        <select name="action" id="action" class="form-select" required>
+                            <option value="" disabled selected>Select an action...</option>
+                            {% for a in actions %}
+                                <option value="{{ a }}">{{ a }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="scope" class="form-label text-secondary small text-uppercase fw-semibold">Resource Scope</label>
+                        <input type="text" class="form-control font-monospace" id="scope" name="scope" value="*" placeholder="* or specific-resource-id" required>
+                        <div class="form-text text-secondary small">Use <code class="text-info">*</code> for wildcard scope or supply a specific UUID.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="hours" class="form-label text-secondary small text-uppercase fw-semibold">Validity Duration (Hours)</label>
+                        <input type="number" class="form-control" id="hours" name="hours" value="24" min="1" max="720" required>
+                        <div class="form-text text-secondary small">Token will automatically expire after this period.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 fw-semibold">
+                        <i class="fa-solid fa-fingerprint me-2"></i> Generate Capability Token
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Capabilities List -->
+    <div class="col-12 col-lg-7">
+        <div class="card shadow border-secondary h-100">
+            <div class="card-header bg-dark py-3">
+                <h5 class="card-title text-white mb-0 fs-6">
+                    <i class="fa-solid fa-list text-info me-2"></i> Issued Capability Codes
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Owner</th>
+                                <th>Action</th>
+                                <th>Scope</th>
+                                <th>Expires</th>
+                                <th>Status</th>
+                                <th class="text-end">Revoke</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if capabilities %}
+                                {% for c in capabilities %}
+                                <tr>
+                                    <td class="small text-light">{{ c.username or 'Unknown' }}</td>
+                                    <td><code class="text-warning small">{{ c.permitted_action }}</code></td>
+                                    <td class="small font-monospace text-secondary">{{ c.resource_scope }}</td>
+                                    <td class="small text-secondary">{{ c.expires_at.strftime('%Y-%m-%d %H:%M') if c.expires_at else 'N/A' }}</td>
+                                    <td>
+                                        {% if c.revoked_at %}
+                                            <span class="badge bg-danger">Revoked</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if not c.revoked_at %}
+                                        <form method="POST" action="{{ url_for('capabilities.revoke', cap_id=c.id) }}" onsubmit="return confirm('Revoke this capability token immediately?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm py-0">
+                                                <i class="fa-solid fa-ban"></i>
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                            <span class="text-secondary small">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-secondary py-4">No capability tokens found.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

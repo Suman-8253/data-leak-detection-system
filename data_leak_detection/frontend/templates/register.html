@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Data Leak Detection System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center mt-3">
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="card shadow-lg border-primary">
+            <div class="card-header text-center py-3">
+                <i class="fa-solid fa-user-plus text-primary fs-2 mb-2"></i>
+                <h4 class="card-title text-white mb-0">Create User Account</h4>
+                <p class="text-secondary small mb-0 mt-1">Register for secure data storage</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label text-secondary small text-uppercase fw-semibold">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="3-30 chars (letters, numbers, underscores)" required autofocus pattern="[A-Za-z0-9_]{3,30}" title="3 to 30 characters: letters, numbers, or underscore only">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label text-secondary small text-uppercase fw-semibold">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label text-secondary small text-uppercase fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="At least 12 characters" required minlength="12">
+                        </div>
+                        <div class="form-text text-secondary small">Requires at least 12 characters, uppercase, lowercase, digit, and special symbol.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="confirm_password" class="form-label text-secondary small text-uppercase fw-semibold">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-shield-halved"></i></span>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Re-enter password" required minlength="12">
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary py-2 fw-semibold">
+                            <i class="fa-solid fa-user-check me-2"></i> Complete Registration
+                        </button>
+                    </div>
+
+                    <div class="text-center text-secondary small">
+                        Already have an account? <a href="{{ url_for('auth.login') }}" class="text-primary text-decoration-none fw-semibold">Sign In</a>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer bg-dark text-secondary small py-2 text-center">
+                <i class="fa-solid fa-fingerprint text-info me-1"></i> Passwords secured via Argon2id one-way hashing
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

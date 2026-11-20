@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Data Leak Detection System{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2 class="h3 fw-bold text-white mb-0">
+                <i class="fa-solid fa-gauge text-primary me-2"></i>
+                {% if is_admin %}Administrative Security Console{% else %}User Dashboard{% endif %}
+            </h2>
+            <p class="text-secondary small mb-0">Overview of encrypted resources and security state</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('records.create_view') }}" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-plus me-1"></i> New Encrypted Record
+            </a>
+            <a href="{{ url_for('security.sql_injection_demo') }}" class="btn btn-outline-warning btn-sm">
+                <i class="fa-solid fa-flask me-1"></i> SQLi Demo
+            </a>
+        </div>
+    </div>
+
+    {% if is_admin %}
+    <!-- Admin Statistics Row -->
+    <div class="col-12">
+        <div class="row g-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card stat-card bg-dark border-primary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-secondary small text-uppercase fw-semibold">Total Users</div>
+                            <div class="fs-3 fw-bold text-white mt-1">{{ stats.total_users }}</div>
+                        </div>
+                        <div class="fs-1 text-primary opacity-50"><i class="fa-solid fa-users"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card stat-card bg-dark border-success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-secondary small text-uppercase fw-semibold">Encrypted Records</div>
+                            <div class="fs-3 fw-bold text-white mt-1">{{ stats.total_records }}</div>
+                        </div>
+                        <div class="fs-1 text-success opacity-50"><i class="fa-solid fa-file-shield"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card stat-card bg-dark border-danger">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-secondary small text-uppercase fw-semibold">Blocked Injections</div>
+                            <div class="fs-3 fw-bold text-danger mt-1">{{ stats.blocked_requests }}</div>
+                        </div>
+                        <div class="fs-1 text-danger opacity-50"><i class="fa-solid fa-shield-virus"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card stat-card bg-dark border-warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-secondary small text-uppercase fw-semibold">Security Events</div>
+                            <div class="fs-3 fw-bold text-warning mt-1">{{ stats.total_events }}</div>
+                        </div>
+                        <div class="fs-1 text-warning opacity-50"><i class="fa-solid fa-bell"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Admin Metrics -->
+    <div class="col-12 col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fs-6 text-white"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>Recent Security Events</h5>
+                <a href="{{ url_for('security.security_monitor') }}" class="btn btn-outline-light btn-sm py-0">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Event Type</th>
+                                <th>Severity</th>
+                                <th>Action Taken</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if stats.recent_events %}
+                                {% for evt in stats.recent_events %}
+                                <tr>
+                                    <td class="small text-secondary">{{ evt.timestamp.strftime('%Y-%m-%d %H:%M:%S') if evt.timestamp else 'N/A' }}</td>
+                                    <td><code class="text-info">{{ evt.event_type }}</code></td>
+                                    <td>
+                                        {% if evt.severity == 'critical' %}
+                                            <span class="badge bg-danger">Critical</span>
+                                        {% elif evt.severity == 'high' %}
+                                            <span class="badge bg-danger opacity-75">High</span>
+                                        {% elif evt.severity == 'medium' %}
+                                            <span class="badge bg-warning text-dark">Medium</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge bg-dark border border-secondary">{{ evt.action_taken }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-secondary py-3">No recent security events logged.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0 fs-6 text-white"><i class="fa-solid fa-chart-pie me-2 text-info"></i>Severity Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush bg-transparent">
+                    {% if stats.severity_distribution %}
+                        {% for row in stats.severity_distribution %}
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center text-secondary border-secondary">
+                            <span class="text-capitalize">{{ row.severity }}</span>
+                            <span class="badge bg-primary rounded-pill">{{ row.cnt }}</span>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item bg-transparent text-secondary border-0 text-center py-4">No events to display.</li>
+                    {% endif %}
+                </ul>
+                <div class="mt-4 pt-3 border-top border-secondary">
+                    <div class="d-flex justify-content-between text-secondary small mb-2">
+                        <span>Failed Logins:</span>
+                        <strong class="text-danger">{{ stats.failed_logins }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-secondary small mb-2">
+                        <span>Unauthorized Access:</span>
+                        <strong class="text-warning">{{ stats.unauthorized_access }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-secondary small">
+                        <span>Active Capability Tokens:</span>
+                        <strong class="text-success">{{ stats.active_tokens }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Regular User Dashboard View -->
+    <div class="col-12 col-md-6">
+        <div class="card stat-card bg-dark border-primary h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="text-secondary small text-uppercase fw-semibold mb-1">Your Encrypted Records</h5>
+                    <div class="display-5 fw-bold text-white">{{ stats.user_records }}</div>
+                    <p class="text-secondary small mt-2 mb-3">Stored using AES-256-GCM authenticated encryption.</p>
+                    <a href="{{ url_for('records.list_view') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fa-solid fa-arrow-right me-1"></i> Manage Records
+                    </a>
+                </div>
+                <div class="fs-1 text-primary opacity-50"><i class="fa-solid fa-folder-closed"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <div class="card stat-card bg-dark border-success h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="text-secondary small text-uppercase fw-semibold mb-1">Active Capability Tokens</h5>
+                    <div class="display-5 fw-bold text-white">{{ stats.active_tokens }}</div>
+                    <p class="text-secondary small mt-2 mb-3">Scoped authorization credentials granted for your session.</p>
+                    <a href="{{ url_for('security.sql_injection_demo') }}" class="btn btn-outline-warning btn-sm">
+                        <i class="fa-solid fa-flask me-1"></i> Try SQLi Demo
+                    </a>
+                </div>
+                <div class="fs-1 text-success opacity-50"><i class="fa-solid fa-shield-halved"></i></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
