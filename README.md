@@ -123,7 +123,7 @@ An enterprise-grade cybersecurity demonstration application implementing **defen
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/data-leak-detection-system.git
+git clone https://github.com/Suman-8253/data-leak-detection-system.git
 cd data-leak-detection-system/data_leak_detection
 ```
 
